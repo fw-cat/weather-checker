@@ -1,0 +1,17 @@
+version: "3"
+
+volumes:
+  db-store:
+
+services:
+  web:
+    platform: linux/arm64
+    build:
+      context: .
+      dockerfile: ./infra/docker/httpd-php/Dockerfile
+    ports:
+      - 1080:80
+    volumes:
+      - ./src:/var/www/html/src/
+      - ./infra/docker/httpd-php/php.ini:/usr/local/etc/php/php.ini
+    tty: true
