@@ -1,1 +1,1 @@
-# weather-checker
+# ゆるっと気象チェッカー
