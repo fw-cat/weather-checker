@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\Weather;
 use App\Exceptions\OpenWeatherException;
 use Illuminate\Support\Facades\Http;
 
@@ -27,6 +28,7 @@ class OpenWeatherService
         }
         $body = $response->json();
         $timezone = $body['timezone'];
+        $weatherInfo = Weather::from($body['weather'][0]['main']);
         return [
             // 位置情報
             'coord' => [
@@ -54,7 +56,7 @@ class OpenWeatherService
 
             // 天候
             'weather' => [
-                'info' => $body['weather'][0]['main'],
+                'info' => $weatherInfo,
             ],
         ];
     }
