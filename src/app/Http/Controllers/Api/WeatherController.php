@@ -13,12 +13,6 @@ class WeatherController extends Controller
     public function index(Request $request, float $lat, float $lng, OpenWeatherService $service): JsonResponse
     {
         $weather = $service->getNowWeather($lat, $lng);
-        return new JsonResponse([
-            'geocode' => [
-                'lat' => $lat,
-                'lng' => $lng,
-            ],
-            'weather' => $weather,
-        ], Response::HTTP_OK);
+        return new JsonResponse($weather, Response::HTTP_OK);
     }
 }

@@ -28,6 +28,12 @@ class OpenWeatherService
         $body = $response->json();
         $timezone = $body['timezone'];
         return [
+            // 位置情報
+            'coord' => [
+                'lat' => $lat,
+                'lon' => $lng,
+            ],
+                
             // 日の出関連
             'suns' => [
                 'sunrise_at'    => $body['sys']['sunrise'] + $timezone,
@@ -44,6 +50,11 @@ class OpenWeatherService
                 'feels_like'    => $this->k2c($body['main']['feels_like']),
                 'humidity'      => $body['main']['humidity'],
                 'discomfort'    => $this->discomfort($this->k2c($body['main']['temp']), $body['main']['humidity']),
+            ],
+
+            // 天候
+            'weather' => [
+                'info' => $body['weather'][0]['main'],
             ],
         ];
     }
