@@ -27,8 +27,12 @@ class OpenWeatherService
             throw new OpenWeatherException();
         }
         $body = $response->json();
+
         $timezone = $body['timezone'];
         $weatherInfo = Weather::from($body['weather'][0]['main']);
+        $temp = $this->k2c($body['main']['temp']);
+        $wetTemp = $this->wetTemp($temp, $body['main']['humidity']);
+
         return [
             // 位置情報
             'coord' => [
@@ -46,12 +50,14 @@ class OpenWeatherService
 
             // 気温関連
             'temps' => [
-                'now'           => $this->k2c($body['main']['temp']),
+                'now'           => $temp,
                 'min'           => $this->k2c($body['main']['temp_min']),
                 'max'           => $this->k2c($body['main']['temp_max']),
                 'feels_like'    => $this->k2c($body['main']['feels_like']),
                 'humidity'      => $body['main']['humidity'],
-                'discomfort'    => $this->discomfort($this->k2c($body['main']['temp']), $body['main']['humidity']),
+                'discomfort'    => $this->discomfort($temp, $body['main']['humidity']),
+                'wet_temp'      => $wetTemp,
+                'wbgt'          => $this->wbgt($temp, $wetTemp),
             ],
 
             // 天候
@@ -59,6 +65,29 @@ class OpenWeatherService
                 'info' => $weatherInfo,
             ],
         ];
+    }
+
+    /**
+     * 湿球温度の計算
+     */
+    private function wetTemp(float $temp, float $humidity): float
+    {
+        $num1 = bcmul(0.151977, pow(bcadd($humidity, 8.313659), 0.5));
+        $num2 = bcadd($temp, $humidity);
+        $num3 = bcsub($humidity, 1.676331);
+        $num4 = bcmul(0.023101, $humidity);
+
+        $wetTemp = $temp * atan($num1) + atan($num2) - atan($num3) + 0.00391838 * pow($humidity, 1.5) * atan($num4) - 4.686035;
+        return round($wetTemp);
+    }
+
+    /**
+     * WBGTの計算
+     */
+    private function wbgt(float $temp, float $wet_temp): float
+    {
+        $wbgt = bcadd(bcmul(0.7, $wet_temp), bcmul(0.3, $temp));
+        return round($wbgt, 2);
     }
 
     /**
